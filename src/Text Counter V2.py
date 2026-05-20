@@ -36,8 +36,7 @@ def analyze_text():
         f"Total paragraphs: {paragraph_count}\n"
         f"Total pages (A4, 250 words/page): {page_count}"
     )
-    # TYPO INTRODUCED HERE FOR MISTAKE-AND-CORRECTION SEQUENCE:
-    results_lbl.config(text=results_text)
+    result_label.config(text=results_text)
 
 # Create the main window
 root = tk.Tk()
@@ -52,6 +51,9 @@ title_label.pack()
 
 text_input = tk.Text(frame, width=50, height=10)
 text_input.pack()
+
+analyze_button = tk.Button(frame, text="Count Text", command=analyze_text)
+analyze_button.pack()
 
 result_label = tk.Label(frame, text="")
 result_label.pack()
