@@ -46,17 +46,17 @@ root.title("Text Character Counter V2+")
 frame = tk.Frame(root)
 frame.pack()
 
-title_label = tk.Label(frame, text="Text Character Counter V2+")
-title_label.pack()
+title_label = tk.Label(frame, text="Text Character Counter V2+", font=("Helvetica", 16, "bold"))
+title_label.pack(pady=5)
 
-text_input = tk.Text(frame, width=50, height=10)
-text_input.pack()
+text_input = tk.Text(frame, width=50, height=10, wrap=tk.WORD, font=("Helvetica", 12))
+text_input.pack(pady=5)
 
-analyze_button = tk.Button(frame, text="Count Text", command=analyze_text)
-analyze_button.pack()
+analyze_button = tk.Button(frame, text="Count Text", command=analyze_text, font=("Helvetica", 12), bg="lightblue")
+analyze_button.pack(pady=5)
 
-result_label = tk.Label(frame, text="")
-result_label.pack()
+result_label = tk.Label(frame, text="", font=("Helvetica", 12), justify="left", anchor="w")
+result_label.pack(pady=5)
 
 # Run the main loop
 root.mainloop()
