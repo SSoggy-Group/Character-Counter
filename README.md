@@ -1,50 +1,31 @@
-# Text Analyzer & Character Counter
+# Character Counter
 
-A clean, modern, and efficient Python application to analyze text metrics. It provides real-time counts for characters, words, sentences, lines, and paragraphs, and estimates A4 page counts using standard page size models.
+A simple Python script to count characters, words, sentences, lines, paragraphs, and estimated pages. Works in both GUI (Tkinter) and terminal modes.
 
-The application includes both an interactive Graphical User Interface (GUI) and a scriptable Command Line Interface (CLI).
+## Usage
 
-## Features
-
-- **Real-Time Analysis (GUI):** Results update dynamically as you type.
-- **Multiple Estimation Models:** Supports words-based (250 words/page) and character-based (3300 characters/page) page calculations.
-- **Utility Tools:** Quick actions to copy report results to the clipboard and clear input.
-- **Flexible Modes:** Launch the modern graphical application or use standard terminal mode.
-- **File & Pipeline Support (CLI):** Directly analyze files or pipe text streams from standard input.
-
-## Getting Started
-
-### Prerequisites
-
-- Python 3.x
-- Tkinter library (usually bundled with Python on Windows/macOS. For Linux/macOS Homebrew installations, ensure standard GUI modules are installed).
-
-### Running the Application
-
-#### 1. Graphical User Interface (GUI)
-Simply run the script with no arguments to launch the GUI:
+### GUI Mode
+Run the script with no arguments to open the GUI:
 ```bash
 python3 src/main.py
 ```
 
-#### 2. Command Line Interface (CLI)
-For pipeline processing or terminal usage, run with the `--cli` or `-c` flag:
-
-**Interactive mode:**
+### CLI Mode
+Run with `--cli` or `-c` to use in the terminal:
 ```bash
 python3 src/main.py --cli
 ```
 
-**Analyze a file directly:**
+You can also analyze a file by passing its path:
 ```bash
-python3 src/main.py [path_to_file]
+python3 src/main.py path/to/file.txt
 ```
 
-**Pipe output from another tool:**
+Or pipe text directly:
 ```bash
-echo "Hello, world!" | python3 src/main.py
+echo "some text" | python3 src/main.py
 ```
 
-## Structure
-- [main.py](file:///Users/maaren/Character-Counter/src/main.py): Unified entrypoint containing GUI layout, CLI routing, and core text parsing logic.
-- [LICENSE](file:///Users/maaren/Character-Counter/LICENSE): MIT License details.
+## Requirements
+- Python 3
+- Tkinter
