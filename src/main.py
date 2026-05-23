@@ -49,7 +49,7 @@ def calculate_pages(word_count, character_count, model):
 class TextCounterGUI:
     def __init__(self, root):
         self.root = root
-        self.root.title("Character Counter")
+        self.root.title("character counter")
         self.root.geometry("600x520")
         self.root.minsize(500, 400)
         
@@ -62,7 +62,7 @@ class TextCounterGUI:
         style.configure('TFrame', background='#f5f6f8')
         style.configure('Card.TFrame', background='#ffffff', relief='solid', borderwidth=1)
         style.configure('Title.TLabel', font=('Helvetica', 14, 'bold'), foreground='#2c3e50', background='#f5f6f8')
-        style.configure('MetricName.TLabel', font=('Helvetica', 9, 'bold'), foreground='#7f8c8d', background='#ffffff')
+        style.configure('MetricName.TLabel', font=('Helvetica', 9), foreground='#7f8c8d', background='#ffffff')
         style.configure('MetricValue.TLabel', font=('Helvetica', 12, 'bold'), foreground='#2980b9', background='#ffffff')
         
         self.main_frame = ttk.Frame(self.root, padding=15, style='TFrame')
@@ -73,7 +73,7 @@ class TextCounterGUI:
         self.header_frame = ttk.Frame(self.main_frame, style='TFrame')
         self.header_frame.grid(row=0, column=0, sticky='ew', pady=(0, 10))
         
-        self.title_label = ttk.Label(self.header_frame, text="Character Counter", style='Title.TLabel')
+        self.title_label = ttk.Label(self.header_frame, text="character counter", style='Title.TLabel')
         self.title_label.pack(anchor='w')
         
         self.text_frame = ttk.Frame(self.main_frame, style='TFrame')
@@ -95,21 +95,21 @@ class TextCounterGUI:
         self.controls_frame = ttk.Frame(self.main_frame, style='TFrame')
         self.controls_frame.grid(row=2, column=0, sticky='ew', pady=(0, 10))
         
-        ttk.Label(self.controls_frame, text="Page Model:", background='#f5f6f8').pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(self.controls_frame, text="page model:", background='#f5f6f8').pack(side=tk.LEFT, padx=(0, 5))
         
-        self.page_model_var = tk.StringVar(value="Words-based (250/pg)")
+        self.page_model_var = tk.StringVar(value="words-based (250/pg)")
         self.page_model_combo = ttk.Combobox(
             self.controls_frame, textvariable=self.page_model_var, 
-            values=["Words-based (250/pg)", "Characters-based (3300/pg)"],
+            values=["words-based (250/pg)", "characters-based (3300/pg)"],
             state="readonly", width=25
         )
         self.page_model_combo.pack(side=tk.LEFT, padx=5)
         self.page_model_combo.bind("<<ComboboxSelected>>", lambda e: self.update_analysis())
         
-        self.clear_btn = ttk.Button(self.controls_frame, text="Clear", command=self.clear_text)
+        self.clear_btn = ttk.Button(self.controls_frame, text="clear", command=self.clear_text)
         self.clear_btn.pack(side=tk.RIGHT, padx=5)
         
-        self.copy_btn = ttk.Button(self.controls_frame, text="Copy", command=self.copy_results)
+        self.copy_btn = ttk.Button(self.controls_frame, text="copy", command=self.copy_results)
         self.copy_btn.pack(side=tk.RIGHT, padx=5)
         
         self.results_frame = ttk.Frame(self.main_frame, style='TFrame')
@@ -120,21 +120,21 @@ class TextCounterGUI:
             
         self.metric_cards = {}
         metrics_layout = [
-            ("Characters", 0, 0),
-            ("Words", 0, 1),
-            ("Char (no spaces)", 0, 2),
-            ("Sentences", 0, 3),
-            ("Lines", 1, 0),
-            ("Paragraphs", 1, 1),
-            ("Est. Pages", 1, 2)
+            ("characters", 0, 0),
+            ("words", 0, 1),
+            ("char (no spaces)", 0, 2),
+            ("sentences", 0, 3),
+            ("lines", 1, 0),
+            ("paragraphs", 1, 1),
+            ("est. pages", 1, 2)
         ]
         
         for name, row, col in metrics_layout:
             card = ttk.Frame(self.results_frame, style='Card.TFrame', padding=8)
-            span = 2 if name == "Est. Pages" else 1
+            span = 2 if name == "est. pages" else 1
             card.grid(row=row, column=col, columnspan=span, padx=3, pady=3, sticky='nsew')
             
-            name_lbl = ttk.Label(card, text=name.upper(), style='MetricName.TLabel')
+            name_lbl = ttk.Label(card, text=name, style='MetricName.TLabel')
             name_lbl.pack(anchor='w')
             
             val_lbl = ttk.Label(card, text="0", style='MetricValue.TLabel')
@@ -159,16 +159,16 @@ class TextCounterGUI:
         metrics = analyze_text(text)
         
         model_str = self.page_model_var.get()
-        model_key = "words" if "Words" in model_str else "characters"
+        model_key = "words" if "words" in model_str else "characters"
         pages = calculate_pages(metrics["words"], metrics["characters"], model_key)
         
-        self.metric_cards["Characters"].config(text=str(metrics["characters"]))
-        self.metric_cards["Words"].config(text=str(metrics["words"]))
-        self.metric_cards["Char (no spaces)"].config(text=str(metrics["characters_no_spaces"]))
-        self.metric_cards["Sentences"].config(text=str(metrics["sentences"]))
-        self.metric_cards["Lines"].config(text=str(metrics["lines"]))
-        self.metric_cards["Paragraphs"].config(text=str(metrics["paragraphs"]))
-        self.metric_cards["Est. Pages"].config(text=str(pages))
+        self.metric_cards["characters"].config(text=str(metrics["characters"]))
+        self.metric_cards["words"].config(text=str(metrics["words"]))
+        self.metric_cards["char (no spaces)"].config(text=str(metrics["characters_no_spaces"]))
+        self.metric_cards["sentences"].config(text=str(metrics["sentences"]))
+        self.metric_cards["lines"].config(text=str(metrics["lines"]))
+        self.metric_cards["paragraphs"].config(text=str(metrics["paragraphs"]))
+        self.metric_cards["est. pages"].config(text=str(pages))
 
     def clear_text(self):
         self.text_input.delete("1.0", tk.END)
@@ -182,21 +182,21 @@ class TextCounterGUI:
             
         metrics = analyze_text(text)
         model_str = self.page_model_var.get()
-        model_key = "words" if "Words" in model_str else "characters"
+        model_key = "words" if "words" in model_str else "characters"
         pages = calculate_pages(metrics["words"], metrics["characters"], model_key)
         
         report = (
-            f"Characters: {metrics['characters']}\n"
-            f"Characters (no spaces): {metrics['characters_no_spaces']}\n"
-            f"Words: {metrics['words']}\n"
-            f"Sentences: {metrics['sentences']}\n"
-            f"Lines: {metrics['lines']}\n"
-            f"Paragraphs: {metrics['paragraphs']}\n"
-            f"Est. Pages ({model_str}): {pages}"
+            f"characters: {metrics['characters']}\n"
+            f"characters (no spaces): {metrics['characters_no_spaces']}\n"
+            f"words: {metrics['words']}\n"
+            f"sentences: {metrics['sentences']}\n"
+            f"lines: {metrics['lines']}\n"
+            f"paragraphs: {metrics['paragraphs']}\n"
+            f"est. pages ({model_str}): {pages}"
         )
         self.root.clipboard_clear()
         self.root.clipboard_append(report)
-        messagebox.showinfo("Success", "Report copied to clipboard.")
+        messagebox.showinfo("success", "report copied to clipboard")
 
 def run_cli(file_path=None):
     text = ""
@@ -205,33 +205,33 @@ def run_cli(file_path=None):
             with open(file_path, 'r', encoding='utf-8') as f:
                 text = f.read()
         except Exception as e:
-            print(f"Error reading file: {e}", file=sys.stderr)
+            print(f"error reading file: {e}", file=sys.stderr)
             sys.exit(1)
     elif not sys.stdin.isatty():
         text = sys.stdin.read()
     else:
-        print("Enter text (Ctrl+D / Ctrl+Z to finish):")
+        print("enter text (ctrl+d / ctrl+z to finish):")
         try:
             text = sys.stdin.read()
         except KeyboardInterrupt:
-            print("\nCancelled.")
+            print("\ncancelled")
             sys.exit(0)
             
     metrics = analyze_text(text)
     pages_word = calculate_pages(metrics["words"], metrics["characters"], "words")
     pages_char = calculate_pages(metrics["words"], metrics["characters"], "characters")
     
-    print(f"Characters: {metrics['characters']}")
-    print(f"Characters (no spaces): {metrics['characters_no_spaces']}")
-    print(f"Words: {metrics['words']}")
-    print(f"Sentences: {metrics['sentences']}")
-    print(f"Lines: {metrics['lines']}")
-    print(f"Paragraphs: {metrics['paragraphs']}")
-    print(f"Pages (250 words/pg): {pages_word}")
-    print(f"Pages (3300 chars/pg): {pages_char}")
+    print(f"characters: {metrics['characters']}")
+    print(f"characters (no spaces): {metrics['characters_no_spaces']}")
+    print(f"words: {metrics['words']}")
+    print(f"sentences: {metrics['sentences']}")
+    print(f"lines: {metrics['lines']}")
+    print(f"paragraphs: {metrics['paragraphs']}")
+    print(f"pages (250 words/pg): {pages_word}")
+    print(f"pages (3300 chars/pg): {pages_char}")
 
 def main():
-    parser = argparse.ArgumentParser(description="Text Character and Word Counter")
+    parser = argparse.ArgumentParser(description="text character and word counter")
     parser.add_argument("--cli", "-c", action="store_true")
     parser.add_argument("file", nargs="?", type=str)
     args = parser.parse_args()
