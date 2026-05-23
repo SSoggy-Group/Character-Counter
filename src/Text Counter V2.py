@@ -43,8 +43,8 @@ root = tk.Tk()
 root.title("Text Character Counter V2+")
 
 # Create and place widgets
-frame = tk.Frame(root)
-frame.pack()
+frame = tk.Frame(root, padx=10, pady=10)
+frame.pack(padx=10, pady=10)
 
 title_label = tk.Label(frame, text="Text Character Counter V2+", font=("Helvetica", 16, "bold"))
 title_label.pack(pady=5)
