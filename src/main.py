@@ -6,7 +6,7 @@ import argparse
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
 
-def analyze_text(text):
+def analyzeText(text):
     if not text:
         return {
             "characters": 0,
@@ -17,33 +17,33 @@ def analyze_text(text):
             "paragraphs": 0,
         }
     
-    char_count = len(text)
+    charCount = len(text)
     words = text.split()
-    word_count = len(words)
-    char_no_spaces = len(text.replace(" ", "").replace("\n", "").replace("\r", ""))
+    wordCount = len(words)
+    charNoSpaces = len(text.replace(" ", "").replace("\n", "").replace("\r", ""))
     lines = text.splitlines()
-    line_count = len(lines)
+    lineCount = len(lines)
     
     sentences = re.split(r'[.!?]', text)
-    sentence_count = len([s for s in sentences if s.strip()])
+    sentenceCount = len([s for s in sentences if s.strip()])
     
     paragraphs = [p for p in text.split("\n") if p.strip()]
-    paragraph_count = len(paragraphs)
+    paragraphCount = len(paragraphs)
     
     return {
-        "characters": char_count,
-        "words": word_count,
-        "characters_no_spaces": char_no_spaces,
-        "sentences": sentence_count,
-        "lines": line_count,
-        "paragraphs": paragraph_count,
+        "characters": charCount,
+        "words": wordCount,
+        "characters_no_spaces": charNoSpaces,
+        "sentences": sentenceCount,
+        "lines": lineCount,
+        "paragraphs": paragraphCount,
     }
 
-def calculate_pages(word_count, character_count, model):
+def calculatePages(wordCount, characterCount, model):
     if model == "words":
-        return math.ceil(word_count / 250) if word_count > 0 else 0
+        return math.ceil(wordCount / 250) if wordCount > 0 else 0
     elif model == "characters":
-        return math.ceil(character_count / 3300) if character_count > 0 else 0
+        return math.ceil(characterCount / 3300) if characterCount > 0 else 0
     return 0
 
 class TextCounterGUI:
@@ -65,61 +65,61 @@ class TextCounterGUI:
         style.configure('MetricName.TLabel', font=('Helvetica', 9), foreground='#7f8c8d', background='#ffffff')
         style.configure('MetricValue.TLabel', font=('Helvetica', 12, 'bold'), foreground='#2980b9', background='#ffffff')
         
-        self.main_frame = ttk.Frame(self.root, padding=15, style='TFrame')
-        self.main_frame.grid(row=0, column=0, sticky='nsew')
-        self.main_frame.columnconfigure(0, weight=1)
-        self.main_frame.rowconfigure(1, weight=1)
+        self.mainFrame = ttk.Frame(self.root, padding=15, style='TFrame')
+        self.mainFrame.grid(row=0, column=0, sticky='nsew')
+        self.mainFrame.columnconfigure(0, weight=1)
+        self.mainFrame.rowconfigure(1, weight=1)
         
-        self.header_frame = ttk.Frame(self.main_frame, style='TFrame')
-        self.header_frame.grid(row=0, column=0, sticky='ew', pady=(0, 10))
+        self.headerFrame = ttk.Frame(self.mainFrame, style='TFrame')
+        self.headerFrame.grid(row=0, column=0, sticky='ew', pady=(0, 10))
         
-        self.title_label = ttk.Label(self.header_frame, text="character counter", style='Title.TLabel')
-        self.title_label.pack(anchor='w')
+        self.titleLabel = ttk.Label(self.headerFrame, text="character counter", style='Title.TLabel')
+        self.titleLabel.pack(anchor='w')
         
-        self.text_frame = ttk.Frame(self.main_frame, style='TFrame')
-        self.text_frame.grid(row=1, column=0, sticky='nsew', pady=(0, 10))
-        self.text_frame.columnconfigure(0, weight=1)
-        self.text_frame.rowconfigure(0, weight=1)
+        self.textFrame = ttk.Frame(self.mainFrame, style='TFrame')
+        self.textFrame.grid(row=1, column=0, sticky='nsew', pady=(0, 10))
+        self.textFrame.columnconfigure(0, weight=1)
+        self.textFrame.rowconfigure(0, weight=1)
         
-        self.text_input = scrolledtext.ScrolledText(
-            self.text_frame, wrap=tk.WORD, font=('Courier New', 11),
+        self.textInput = scrolledtext.ScrolledText(
+            self.textFrame, wrap=tk.WORD, font=('Courier New', 11),
             bg='#ffffff', fg='#2c3e50', insertbackground='#2c3e50',
             bd=1, relief='solid', padx=5, pady=5
         )
-        self.text_input.grid(row=0, column=0, sticky='nsew')
-        self.text_input.focus_set()
+        self.textInput.grid(row=0, column=0, sticky='nsew')
+        self.textInput.focus_set()
         
-        self.text_input.bind('<<Modified>>', self.on_text_modified)
-        self.text_input.bind('<KeyRelease>', self.on_key_release)
+        self.textInput.bind('<<Modified>>', self.onTextModified)
+        self.textInput.bind('<KeyRelease>', self.onKeyRelease)
         
-        self.controls_frame = ttk.Frame(self.main_frame, style='TFrame')
-        self.controls_frame.grid(row=2, column=0, sticky='ew', pady=(0, 10))
+        self.controlsFrame = ttk.Frame(self.mainFrame, style='TFrame')
+        self.controlsFrame.grid(row=2, column=0, sticky='ew', pady=(0, 10))
         
-        ttk.Label(self.controls_frame, text="page model:", background='#f5f6f8').pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(self.controlsFrame, text="page model:", background='#f5f6f8').pack(side=tk.LEFT, padx=(0, 5))
         
-        self.page_model_var = tk.StringVar(value="words-based (250/pg)")
-        self.page_model_combo = ttk.Combobox(
-            self.controls_frame, textvariable=self.page_model_var, 
+        self.pageModelVar = tk.StringVar(value="words-based (250/pg)")
+        self.pageModelCombo = ttk.Combobox(
+            self.controlsFrame, textvariable=self.pageModelVar, 
             values=["words-based (250/pg)", "characters-based (3300/pg)"],
             state="readonly", width=25
         )
-        self.page_model_combo.pack(side=tk.LEFT, padx=5)
-        self.page_model_combo.bind("<<ComboboxSelected>>", lambda e: self.update_analysis())
+        self.pageModelCombo.pack(side=tk.LEFT, padx=5)
+        self.pageModelCombo.bind("<<ComboboxSelected>>", lambda e: self.updateAnalysis())
         
-        self.clear_btn = ttk.Button(self.controls_frame, text="clear", command=self.clear_text)
-        self.clear_btn.pack(side=tk.RIGHT, padx=5)
+        self.clearBtn = ttk.Button(self.controlsFrame, text="clear", command=self.clearText)
+        self.clearBtn.pack(side=tk.RIGHT, padx=5)
         
-        self.copy_btn = ttk.Button(self.controls_frame, text="copy", command=self.copy_results)
-        self.copy_btn.pack(side=tk.RIGHT, padx=5)
+        self.copyBtn = ttk.Button(self.controlsFrame, text="copy", command=self.copyResults)
+        self.copyBtn.pack(side=tk.RIGHT, padx=5)
         
-        self.results_frame = ttk.Frame(self.main_frame, style='TFrame')
-        self.results_frame.grid(row=3, column=0, sticky='ew')
+        self.resultsFrame = ttk.Frame(self.mainFrame, style='TFrame')
+        self.resultsFrame.grid(row=3, column=0, sticky='ew')
         
         for col in range(4):
-            self.results_frame.columnconfigure(col, weight=1, uniform="equal")
+            self.resultsFrame.columnconfigure(col, weight=1, uniform="equal")
             
-        self.metric_cards = {}
-        metrics_layout = [
+        self.metricCards = {}
+        metricsLayout = [
             ("characters", 0, 0),
             ("words", 0, 1),
             ("char (no spaces)", 0, 2),
@@ -129,61 +129,61 @@ class TextCounterGUI:
             ("est. pages", 1, 2)
         ]
         
-        for name, row, col in metrics_layout:
-            card = ttk.Frame(self.results_frame, style='Card.TFrame', padding=8)
+        for name, row, col in metricsLayout:
+            card = ttk.Frame(self.resultsFrame, style='Card.TFrame', padding=8)
             span = 2 if name == "est. pages" else 1
             card.grid(row=row, column=col, columnspan=span, padx=3, pady=3, sticky='nsew')
             
-            name_lbl = ttk.Label(card, text=name, style='MetricName.TLabel')
-            name_lbl.pack(anchor='w')
+            nameLbl = ttk.Label(card, text=name, style='MetricName.TLabel')
+            nameLbl.pack(anchor='w')
             
-            val_lbl = ttk.Label(card, text="0", style='MetricValue.TLabel')
-            val_lbl.pack(anchor='w', pady=(2, 0))
+            valLbl = ttk.Label(card, text="0", style='MetricValue.TLabel')
+            valLbl.pack(anchor='w', pady=(2, 0))
             
-            self.metric_cards[name] = val_lbl
+            self.metricCards[name] = valLbl
 
-        self.update_analysis()
+        self.updateAnalysis()
 
-    def on_text_modified(self, event):
-        self.text_input.edit_modified(False)
-        self.update_analysis()
+    def onTextModified(self, event):
+        self.textInput.edit_modified(False)
+        self.updateAnalysis()
 
-    def on_key_release(self, event):
-        self.update_analysis()
+    def onKeyRelease(self, event):
+        self.updateAnalysis()
 
-    def update_analysis(self):
-        text = self.text_input.get("1.0", tk.END)
+    def updateAnalysis(self):
+        text = self.textInput.get("1.0", tk.END)
         if text.endswith("\n"):
             text = text[:-1]
             
-        metrics = analyze_text(text)
+        metrics = analyzeText(text)
         
-        model_str = self.page_model_var.get()
-        model_key = "words" if "words" in model_str else "characters"
-        pages = calculate_pages(metrics["words"], metrics["characters"], model_key)
+        modelStr = self.pageModelVar.get()
+        modelKey = "words" if "words" in modelStr else "characters"
+        pages = calculatePages(metrics["words"], metrics["characters"], modelKey)
         
-        self.metric_cards["characters"].config(text=str(metrics["characters"]))
-        self.metric_cards["words"].config(text=str(metrics["words"]))
-        self.metric_cards["char (no spaces)"].config(text=str(metrics["characters_no_spaces"]))
-        self.metric_cards["sentences"].config(text=str(metrics["sentences"]))
-        self.metric_cards["lines"].config(text=str(metrics["lines"]))
-        self.metric_cards["paragraphs"].config(text=str(metrics["paragraphs"]))
-        self.metric_cards["est. pages"].config(text=str(pages))
+        self.metricCards["characters"].config(text=str(metrics["characters"]))
+        self.metricCards["words"].config(text=str(metrics["words"]))
+        self.metricCards["char (no spaces)"].config(text=str(metrics["characters_no_spaces"]))
+        self.metricCards["sentences"].config(text=str(metrics["sentences"]))
+        self.metricCards["lines"].config(text=str(metrics["lines"]))
+        self.metricCards["paragraphs"].config(text=str(metrics["paragraphs"]))
+        self.metricCards["est. pages"].config(text=str(pages))
 
-    def clear_text(self):
-        self.text_input.delete("1.0", tk.END)
-        self.update_analysis()
-        self.text_input.focus_set()
+    def clearText(self):
+        self.textInput.delete("1.0", tk.END)
+        self.updateAnalysis()
+        self.textInput.focus_set()
 
-    def copy_results(self):
-        text = self.text_input.get("1.0", tk.END)
+    def copyResults(self):
+        text = self.textInput.get("1.0", tk.END)
         if text.endswith("\n"):
             text = text[:-1]
             
-        metrics = analyze_text(text)
-        model_str = self.page_model_var.get()
-        model_key = "words" if "words" in model_str else "characters"
-        pages = calculate_pages(metrics["words"], metrics["characters"], model_key)
+        metrics = analyzeText(text)
+        modelStr = self.pageModelVar.get()
+        modelKey = "words" if "words" in modelStr else "characters"
+        pages = calculatePages(metrics["words"], metrics["characters"], modelKey)
         
         report = (
             f"characters: {metrics['characters']}\n"
@@ -192,17 +192,17 @@ class TextCounterGUI:
             f"sentences: {metrics['sentences']}\n"
             f"lines: {metrics['lines']}\n"
             f"paragraphs: {metrics['paragraphs']}\n"
-            f"est. pages ({model_str}): {pages}"
+            f"est. pages ({modelStr}): {pages}"
         )
         self.root.clipboard_clear()
         self.root.clipboard_append(report)
         messagebox.showinfo("success", "report copied to clipboard")
 
-def run_cli(file_path=None):
+def runCli(filePath=None):
     text = ""
-    if file_path:
+    if filePath:
         try:
-            with open(file_path, 'r', encoding='utf-8') as f:
+            with open(filePath, 'r', encoding='utf-8') as f:
                 text = f.read()
         except Exception as e:
             print(f"error reading file: {e}", file=sys.stderr)
@@ -217,9 +217,9 @@ def run_cli(file_path=None):
             print("\ncancelled")
             sys.exit(0)
             
-    metrics = analyze_text(text)
-    pages_word = calculate_pages(metrics["words"], metrics["characters"], "words")
-    pages_char = calculate_pages(metrics["words"], metrics["characters"], "characters")
+    metrics = analyzeText(text)
+    pagesWord = calculatePages(metrics["words"], metrics["characters"], "words")
+    pagesChar = calculatePages(metrics["words"], metrics["characters"], "characters")
     
     print(f"characters: {metrics['characters']}")
     print(f"characters (no spaces): {metrics['characters_no_spaces']}")
@@ -227,8 +227,8 @@ def run_cli(file_path=None):
     print(f"sentences: {metrics['sentences']}")
     print(f"lines: {metrics['lines']}")
     print(f"paragraphs: {metrics['paragraphs']}")
-    print(f"pages (250 words/pg): {pages_word}")
-    print(f"pages (3300 chars/pg): {pages_char}")
+    print(f"pages (250 words/pg): {pagesWord}")
+    print(f"pages (3300 chars/pg): {pagesChar}")
 
 def main():
     parser = argparse.ArgumentParser(description="text character and word counter")
@@ -237,7 +237,7 @@ def main():
     args = parser.parse_args()
 
     if args.cli or args.file or not sys.stdin.isatty():
-        run_cli(args.file)
+        runCli(args.file)
     else:
         root = tk.Tk()
         app = TextCounterGUI(root)
