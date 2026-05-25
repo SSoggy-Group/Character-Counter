@@ -5,6 +5,98 @@ import math
 import argparse
 import tkinter as tk
 from tkinter import ttk, messagebox, scrolledtext
+from collections import Counter
+import json
+
+STOPWORDS = {
+    "the", "and", "a", "of", "to", "in", "is", "you", "that", "it", "he", "was", "for", "on", 
+    "are", "as", "with", "his", "they", "i", "at", "be", "this", "have", "from", "or", "one", 
+    "had", "by", "word", "but", "not", "what", "all", "were", "we", "when", "your", "can", 
+    "said", "there", "use", "an", "each", "which", "she", "do", "how", "their", "if", "will", 
+    "up", "other", "about", "out", "many", "then", "them", "these", "so", "some", "her", "would", 
+    "make", "like", "him", "into", "has", "look", "two", "more", "write", "go", "see", "number", 
+    "no", "way", "could", "people", "my", "than", "first", "water", "been", "call", "who", "oil", 
+    "its", "now", "find", "long", "down", "day", "did", "get", "come", "made", "may", "part"
+}
+
+def countSyllablesInWord(word):
+    word = word.lower().strip(",.?!:;()\"'-")
+    if not word:
+        return 0
+    vowels = "aeiouy"
+    count = 0
+    prev_is_vowel = False
+    for char in word:
+        is_vowel = char in vowels
+        if is_vowel and not prev_is_vowel:
+            count += 1
+        prev_is_vowel = is_vowel
+    if word.endswith('e') and not word.endswith('le'):
+        count -= 1
+    return max(1, count)
+
+def calculateReadability(wordCount, sentenceCount, syllableCount):
+    if wordCount == 0 or sentenceCount == 0:
+        return 100.0, 0.0
+    ease = 206.835 - 1.015 * (wordCount / sentenceCount) - 84.6 * (syllableCount / wordCount)
+    grade = 0.39 * (wordCount / sentenceCount) + 11.8 * (syllableCount / wordCount) - 15.59
+    return max(0.0, min(100.0, ease)), max(0.0, grade)
+
+def getReadabilityInterpretation(ease):
+    if ease >= 90:
+        return "very easy (5th grade)"
+    elif ease >= 80:
+        return "easy (6th grade)"
+    elif ease >= 70:
+        return "fairly easy (7th grade)"
+    elif ease >= 60:
+        return "standard (8th-9th grade)"
+    elif ease >= 50:
+        return "fairly difficult (high school)"
+    elif ease >= 30:
+        return "difficult (college)"
+    else:
+        return "very difficult (college grad)"
+
+def getKeywords(text, top_n=5):
+    words = re.findall(r'\b[a-zA-Z]{2,}\b', text.lower())
+    content_words = [w for w in words if w not in STOPWORDS]
+    if not content_words:
+        return []
+    counter = Counter(content_words)
+    total_words = len(words)
+    top = counter.most_common(top_n)
+    return [(w, count, (count / total_words) * 100 if total_words > 0 else 0.0) for w, count in top]
+
+def getCharacterDistribution(text, top_n=8):
+    chars = [c.lower() for c in text if c.isalnum()]
+    if not chars:
+        return []
+    counter = Counter(chars)
+    total_chars = len(chars)
+    top = counter.most_common(top_n)
+    return [(c, count, (count / total_chars) * 100 if total_chars > 0 else 0.0) for c, count in top]
+
+def countPatternOccurrences(text, pattern, is_regex=False):
+    if not pattern:
+        return 0
+    try:
+        if is_regex:
+            return len(re.findall(pattern, text, re.IGNORECASE))
+        else:
+            return text.lower().count(pattern.lower())
+    except Exception:
+        return 0
+
+def formatTime(minutes):
+    if minutes <= 0:
+        return "0s"
+    total_seconds = int(round(minutes * 60))
+    mins = total_seconds // 60
+    secs = total_seconds % 60
+    if mins > 0:
+        return f"{mins}m {secs}s"
+    return f"{secs}s"
 
 def analyzeText(text):
     if not text:
@@ -15,6 +107,13 @@ def analyzeText(text):
             "sentences": 0,
             "lines": 0,
             "paragraphs": 0,
+            "syllables": 0,
+            "readability_ease": 100.0,
+            "readability_grade": 0.0,
+            "reading_time": 0.0,
+            "speaking_time": 0.0,
+            "keywords": [],
+            "char_dist": []
         }
     
     charCount = len(text)
@@ -30,6 +129,16 @@ def analyzeText(text):
     paragraphs = [p for p in text.split("\n") if p.strip()]
     paragraphCount = len(paragraphs)
     
+    word_tokens = re.findall(r'\b[a-zA-Z\']+\b', text)
+    syllableCount = sum(countSyllablesInWord(w) for w in word_tokens)
+    
+    ease, grade = calculateReadability(wordCount, sentenceCount, syllableCount)
+    reading_time = wordCount / 200.0
+    speaking_time = wordCount / 130.0
+    
+    keywords = getKeywords(text)
+    char_dist = getCharacterDistribution(text)
+    
     return {
         "characters": charCount,
         "words": wordCount,
@@ -37,6 +146,13 @@ def analyzeText(text):
         "sentences": sentenceCount,
         "lines": lineCount,
         "paragraphs": paragraphCount,
+        "syllables": syllableCount,
+        "readability_ease": ease,
+        "readability_grade": grade,
+        "reading_time": reading_time,
+        "speaking_time": speaking_time,
+        "keywords": keywords,
+        "char_dist": char_dist
     }
 
 def calculatePages(wordCount, characterCount, model):
@@ -141,7 +257,7 @@ class TextCounterGUI:
             valLbl.pack(anchor='w', pady=(2, 0))
             
             self.metricCards[name] = valLbl
-
+            
         self.updateAnalysis()
 
     def onTextModified(self, event):
@@ -198,7 +314,7 @@ class TextCounterGUI:
         self.root.clipboard_append(report)
         messagebox.showinfo("success", "report copied to clipboard")
 
-def runCli(filePath=None):
+def runCli(filePath=None, args=None):
     text = ""
     if filePath:
         try:
@@ -221,23 +337,100 @@ def runCli(filePath=None):
     pagesWord = calculatePages(metrics["words"], metrics["characters"], "words")
     pagesChar = calculatePages(metrics["words"], metrics["characters"], "characters")
     
-    print(f"characters: {metrics['characters']}")
-    print(f"characters (no spaces): {metrics['characters_no_spaces']}")
-    print(f"words: {metrics['words']}")
-    print(f"sentences: {metrics['sentences']}")
-    print(f"lines: {metrics['lines']}")
-    print(f"paragraphs: {metrics['paragraphs']}")
-    print(f"pages (250 words/pg): {pagesWord}")
-    print(f"pages (3300 chars/pg): {pagesChar}")
+    queryCount = 0
+    if args and args.query:
+        queryCount = countPatternOccurrences(text, args.query, is_regex=args.regex)
+        
+    if args and args.json:
+        out_dict = {
+            "characters": metrics["characters"],
+            "characters_no_spaces": metrics["characters_no_spaces"],
+            "words": metrics["words"],
+            "sentences": metrics["sentences"],
+            "lines": metrics["lines"],
+            "paragraphs": metrics["paragraphs"],
+            "pages_words_based": pagesWord,
+            "pages_chars_based": pagesChar,
+            "syllables": metrics["syllables"],
+            "readability": {
+                "ease_score": round(metrics["readability_ease"], 2),
+                "grade_level": round(metrics["readability_grade"], 2),
+                "interpretation": getReadabilityInterpretation(metrics["readability_ease"])
+            },
+            "estimated_time": {
+                "reading": formatTime(metrics["reading_time"]),
+                "speaking": formatTime(metrics["speaking_time"])
+            },
+            "top_keywords": [{"word": w, "count": cnt, "density_pct": round(pct, 2)} for w, cnt, pct in metrics["keywords"]],
+            "top_characters": [{"char": c, "count": cnt, "density_pct": round(pct, 2)} for c, cnt, pct in metrics["char_dist"]]
+        }
+        if args.query:
+            out_dict["query_matches"] = {
+                "query": args.query,
+                "count": queryCount,
+                "is_regex": args.regex
+            }
+        print(json.dumps(out_dict, indent=2))
+    else:
+        active_filters = False
+        if args:
+            if args.words or args.chars or args.chars_no_spaces or args.lines or args.sentences or args.paragraphs or args.readability or args.query is not None:
+                active_filters = True
+                
+        if active_filters:
+            if args.chars:
+                print(f"characters: {metrics['characters']}")
+            if args.chars_no_spaces:
+                print(f"characters (no spaces): {metrics['characters_no_spaces']}")
+            if args.words:
+                print(f"words: {metrics['words']}")
+            if args.sentences:
+                print(f"sentences: {metrics['sentences']}")
+            if args.lines:
+                print(f"lines: {metrics['lines']}")
+            if args.paragraphs:
+                print(f"paragraphs: {metrics['paragraphs']}")
+            if args.readability:
+                print(f"readability ease: {round(metrics['readability_ease'], 2)} ({getReadabilityInterpretation(metrics['readability_ease'])})")
+                print(f"readability grade: {round(metrics['readability_grade'], 2)}")
+            if args.query is not None:
+                print(f"query matches ('{args.query}'): {queryCount}")
+        else:
+            print(f"characters: {metrics['characters']}")
+            print(f"characters (no spaces): {metrics['characters_no_spaces']}")
+            print(f"words: {metrics['words']}")
+            print(f"sentences: {metrics['sentences']}")
+            print(f"lines: {metrics['lines']}")
+            print(f"paragraphs: {metrics['paragraphs']}")
+            print(f"pages (250 words/pg): {pagesWord}")
+            print(f"pages (3300 chars/pg): {pagesChar}")
+            print(f"readability ease: {round(metrics['readability_ease'], 2)} ({getReadabilityInterpretation(metrics['readability_ease'])})")
+            print(f"readability grade: {round(metrics['readability_grade'], 2)}")
+            print(f"reading time: {formatTime(metrics['reading_time'])}")
+            print(f"speaking time: {formatTime(metrics['speaking_time'])}")
+            if metrics["keywords"]:
+                k_str = ", ".join([f"{w} ({cnt})" for w, cnt, _ in metrics["keywords"]])
+                print(f"top keywords: {k_str}")
 
 def main():
     parser = argparse.ArgumentParser(description="text character and word counter")
-    parser.add_argument("--cli", "-c", action="store_true")
-    parser.add_argument("file", nargs="?", type=str)
+    parser.add_argument("--cli", "-c", action="store_true", help="force cli mode")
+    parser.add_argument("file", nargs="?", type=str, help="file to analyze")
+    parser.add_argument("--json", "-j", action="store_true", help="output in json format")
+    parser.add_argument("--words", "-w", action="store_true", help="output word count only")
+    parser.add_argument("--chars", action="store_true", help="output character count only (with spaces)")
+    parser.add_argument("--chars-no-spaces", action="store_true", help="output character count only (without spaces)")
+    parser.add_argument("--lines", "-l", action="store_true", help="output line count only")
+    parser.add_argument("--sentences", "-s", action="store_true", help="output sentence count only")
+    parser.add_argument("--paragraphs", "-p", action="store_true", help="output paragraph count only")
+    parser.add_argument("--readability", "-r", action="store_true", help="output readability metrics only")
+    parser.add_argument("--query", "-q", type=str, default=None, help="pattern or word to count")
+    parser.add_argument("--regex", action="store_true", help="treat query as a regular expression")
+    
     args = parser.parse_args()
 
     if args.cli or args.file or not sys.stdin.isatty():
-        runCli(args.file)
+        runCli(args.file, args)
     else:
         root = tk.Tk()
         app = TextCounterGUI(root)
