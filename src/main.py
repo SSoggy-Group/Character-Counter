@@ -19,6 +19,35 @@ STOPWORDS = {
     "its", "now", "find", "long", "down", "day", "did", "get", "come", "made", "may", "part"
 }
 
+THEMES = {
+    "light": {
+        "bg": "#f5f6f8",
+        "card_bg": "#ffffff",
+        "fg": "#2c3e50",
+        "fg_muted": "#7f8c8d",
+        "accent": "#2980b9",
+        "text_bg": "#ffffff",
+        "text_fg": "#2c3e50",
+        "text_insert": "#2c3e50",
+        "canvas_bg": "#ffffff",
+        "chart_colors": ["#3498db", "#2ecc71", "#e74c3c", "#f1c40f", "#9b59b6"],
+        "border_color": "#dcdde1"
+    },
+    "dark": {
+        "bg": "#1e1e24",
+        "card_bg": "#2d2d3a",
+        "fg": "#f5f6f8",
+        "fg_muted": "#a4b0be",
+        "accent": "#6ab04c",
+        "text_bg": "#25252f",
+        "text_fg": "#f5f6f8",
+        "text_insert": "#f5f6f8",
+        "canvas_bg": "#25252f",
+        "chart_colors": ["#686de0", "#4cd137", "#e84118", "#fbc531", "#9c88ff"],
+        "border_color": "#3f3f50"
+    }
+}
+
 def countSyllablesInWord(word):
     word = word.lower().strip(",.?!:;()\"'-")
     if not word:
@@ -98,6 +127,33 @@ def formatTime(minutes):
         return f"{mins}m {secs}s"
     return f"{secs}s"
 
+def toSentenceCase(text):
+    sentences = re.split(r'((?<=[.!?])\s+)', text)
+    result = []
+    for part in sentences:
+        if not part:
+            continue
+        if part.isspace():
+            result.append(part)
+        else:
+            match = re.search(r'\w', part)
+            if match:
+                idx = match.start()
+                capitalized = part[:idx] + part[idx].upper() + part[idx+1:]
+                result.append(capitalized)
+            else:
+                result.append(part)
+    return "".join(result)
+
+def cleanSpaces(text):
+    lines = []
+    for line in text.splitlines():
+        cleaned = re.sub(r'[ \t]+', ' ', line).strip()
+        lines.append(cleaned)
+    content = "\n".join(lines)
+    content = re.sub(r'\n{3,}', '\n\n', content)
+    return content.strip()
+
 def analyzeText(text):
     if not text:
         return {
@@ -166,32 +222,29 @@ class TextCounterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("character counter")
-        self.root.geometry("600x520")
-        self.root.minsize(500, 400)
+        self.root.geometry("600x560")
+        self.root.minsize(500, 450)
+        self.currentTheme = "light"
         
         self.root.columnconfigure(0, weight=1)
         self.root.rowconfigure(0, weight=1)
-        
-        style = ttk.Style()
-        style.theme_use('clam')
-        style.configure('.', font=('Helvetica', 10))
-        style.configure('TFrame', background='#f5f6f8')
-        style.configure('Card.TFrame', background='#ffffff', relief='solid', borderwidth=1)
-        style.configure('Title.TLabel', font=('Helvetica', 14, 'bold'), foreground='#2c3e50', background='#f5f6f8')
-        style.configure('MetricName.TLabel', font=('Helvetica', 9), foreground='#7f8c8d', background='#ffffff')
-        style.configure('MetricValue.TLabel', font=('Helvetica', 12, 'bold'), foreground='#2980b9', background='#ffffff')
         
         self.mainFrame = ttk.Frame(self.root, padding=15, style='TFrame')
         self.mainFrame.grid(row=0, column=0, sticky='nsew')
         self.mainFrame.columnconfigure(0, weight=1)
         self.mainFrame.rowconfigure(1, weight=1)
         
+        # Header Frame
         self.headerFrame = ttk.Frame(self.mainFrame, style='TFrame')
         self.headerFrame.grid(row=0, column=0, sticky='ew', pady=(0, 10))
         
         self.titleLabel = ttk.Label(self.headerFrame, text="character counter", style='Title.TLabel')
-        self.titleLabel.pack(anchor='w')
+        self.titleLabel.pack(side=tk.LEFT, anchor='w')
         
+        self.themeBtn = ttk.Button(self.headerFrame, text="🌙 dark mode", command=self.toggleTheme)
+        self.themeBtn.pack(side=tk.RIGHT, anchor='e')
+        
+        # Text Frame
         self.textFrame = ttk.Frame(self.mainFrame, style='TFrame')
         self.textFrame.grid(row=1, column=0, sticky='nsew', pady=(0, 10))
         self.textFrame.columnconfigure(0, weight=1)
@@ -208,10 +261,22 @@ class TextCounterGUI:
         self.textInput.bind('<<Modified>>', self.onTextModified)
         self.textInput.bind('<KeyRelease>', self.onKeyRelease)
         
-        self.controlsFrame = ttk.Frame(self.mainFrame, style='TFrame')
-        self.controlsFrame.grid(row=2, column=0, sticky='ew', pady=(0, 10))
+        # Case conversion toolbar
+        self.caseFrame = ttk.Frame(self.mainFrame, style='TFrame')
+        self.caseFrame.grid(row=2, column=0, sticky='ew', pady=(0, 10))
         
-        ttk.Label(self.controlsFrame, text="page model:", background='#f5f6f8').pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Label(self.caseFrame, text="format text:", style='TLabel').pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(self.caseFrame, text="UPPER", command=lambda: self.modifyText(str.upper)).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.caseFrame, text="lower", command=lambda: self.modifyText(str.lower)).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.caseFrame, text="Title", command=lambda: self.modifyText(str.title)).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.caseFrame, text="Sentence", command=lambda: self.modifyText(toSentenceCase)).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.caseFrame, text="Clean Spaces", command=lambda: self.modifyText(cleanSpaces)).pack(side=tk.LEFT, padx=2)
+        
+        # Controls Frame
+        self.controlsFrame = ttk.Frame(self.mainFrame, style='TFrame')
+        self.controlsFrame.grid(row=3, column=0, sticky='ew', pady=(0, 10))
+        
+        ttk.Label(self.controlsFrame, text="page model:", style='TLabel').pack(side=tk.LEFT, padx=(0, 5))
         
         self.pageModelVar = tk.StringVar(value="words-based (250/pg)")
         self.pageModelCombo = ttk.Combobox(
@@ -228,8 +293,9 @@ class TextCounterGUI:
         self.copyBtn = ttk.Button(self.controlsFrame, text="copy", command=self.copyResults)
         self.copyBtn.pack(side=tk.RIGHT, padx=5)
         
+        # Results Frame
         self.resultsFrame = ttk.Frame(self.mainFrame, style='TFrame')
-        self.resultsFrame.grid(row=3, column=0, sticky='ew')
+        self.resultsFrame.grid(row=4, column=0, sticky='ew')
         
         for col in range(4):
             self.resultsFrame.columnconfigure(col, weight=1, uniform="equal")
@@ -258,6 +324,62 @@ class TextCounterGUI:
             
             self.metricCards[name] = valLbl
             
+        self.applyTheme()
+        self.updateAnalysis()
+
+    def toggleTheme(self):
+        if self.currentTheme == "light":
+            self.currentTheme = "dark"
+            self.themeBtn.config(text="☀ light mode")
+        else:
+            self.currentTheme = "light"
+            self.themeBtn.config(text="🌙 dark mode")
+        self.applyTheme()
+
+    def applyTheme(self):
+        theme = THEMES[self.currentTheme]
+        style = ttk.Style()
+        style.theme_use('clam')
+        
+        style.configure('.', font=('Helvetica', 10), foreground=theme["fg"], background=theme["bg"])
+        style.configure('TFrame', background=theme["bg"])
+        style.configure('Card.TFrame', background=theme["card_bg"], relief='solid', borderwidth=1)
+        style.configure('Title.TLabel', font=('Helvetica', 14, 'bold'), foreground=theme["fg"], background=theme["bg"])
+        style.configure('TLabel', foreground=theme["fg"], background=theme["bg"])
+        style.configure('MetricName.TLabel', font=('Helvetica', 9), foreground=theme["fg_muted"], background=theme["card_bg"])
+        style.configure('MetricValue.TLabel', font=('Helvetica', 12, 'bold'), foreground=theme["accent"], background=theme["card_bg"])
+        
+        style.configure('TButton', background=theme["card_bg"], foreground=theme["fg"], bordercolor=theme["border_color"])
+        style.map('TButton', background=[('active', theme["bg"])])
+        
+        style.configure('TCombobox', fieldbackground=theme["text_bg"], background=theme["bg"], foreground=theme["fg"])
+        
+        self.root.config(bg=theme["bg"])
+        self.textInput.config(
+            bg=theme["text_bg"], 
+            fg=theme["text_fg"], 
+            insertbackground=theme["text_insert"],
+            highlightbackground=theme["border_color"],
+            bd=1,
+            relief='solid'
+        )
+
+    def modifyText(self, transform_func):
+        try:
+            start = self.textInput.index(tk.SEL_FIRST)
+            end = self.textInput.index(tk.SEL_LAST)
+            selected_text = self.textInput.get(start, end)
+            transformed = transform_func(selected_text)
+            self.textInput.delete(start, end)
+            self.textInput.insert(start, transformed)
+            self.textInput.tag_add(tk.SEL, start, f"{start} + {len(transformed)} chars")
+        except tk.TclError:
+            entire_text = self.textInput.get("1.0", tk.END)
+            if entire_text.endswith("\n"):
+                entire_text = entire_text[:-1]
+            transformed = transform_func(entire_text)
+            self.textInput.delete("1.0", tk.END)
+            self.textInput.insert("1.0", transformed)
         self.updateAnalysis()
 
     def onTextModified(self, event):
