@@ -5,6 +5,7 @@ import math
 
 def analyze_text():
     text = text_input.get("1.0", tk.END).strip()
+    # Guard against empty or whitespace-only input to prevent division by zero or errors
     if not text:
         messagebox.showerror("Error", "Please enter text to count.")
         return
