@@ -133,7 +133,7 @@ def toSpongeCase(text):
     return "".join(random.choice([char.upper(), char.lower()]) if char.isalpha() else char for char in text)
 
 def toSentenceCase(text):
-    sentences = re.split(r'((?<=[.!?])\s+)', text)
+    sentences = re.split(r'((?:(?<=[.!?])\s+)|(?:\n+))', text)
     result = []
     for part in sentences:
         if not part:
@@ -277,7 +277,7 @@ class TextCounterGUI:
         ttk.Button(self.caseFrame, text="lower", command=lambda: self.modifyText(str.lower)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Title", command=lambda: self.modifyText(str.title)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Sentence", command=lambda: self.modifyText(toSentenceCase)).pack(side=tk.LEFT, padx=2)
-        ttk.Button(self.caseFrame, text="hELLo", command=lambda: self.modifyText(toSpongeCase)).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.caseFrame, text="rAnDoM", command=lambda: self.modifyText(toSpongeCase)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Clean Spaces", command=lambda: self.modifyText(cleanSpaces)).pack(side=tk.LEFT, padx=2)
         
         # 4. Controls Frame
@@ -387,18 +387,19 @@ class TextCounterGUI:
         self.timeCardTitle = ttk.Label(self.timeCard, text="Speech & Timing", style='ReadabilityTitle.TLabel')
         self.timeCardTitle.pack(anchor='w', pady=(0, 10))
         
-        ttk.Label(self.timeCard, text="Silent Reading Time (200 WPM):", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
+        ttk.Label(self.timeCard, text="Silent Reading:", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
         self.readTimeLbl = ttk.Label(self.timeCard, text="0s", style='MetricValue.TLabel')
         self.readTimeLbl.pack(anchor='w', pady=(0, 15))
         
-        ttk.Label(self.timeCard, text="Speaking Time (130 WPM):", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
+        ttk.Label(self.timeCard, text="Speaking Time:", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
         self.speakTimeLbl = ttk.Label(self.timeCard, text="0s", style='MetricValue.TLabel')
         self.speakTimeLbl.pack(anchor='w', pady=(0, 15))
         
         self.paceInfoLbl = ttk.Label(
             self.timeCard, 
-            text="Ideal for presentation planning\nand readability auditing.", 
+            text="Calculated at 200 WPM (reading) and 130 WPM (speaking).\nIdeal for presentation planning.", 
             style='CardText.TLabel',
+            wraplength=160,
             justify=tk.LEFT
         )
         self.paceInfoLbl.pack(anchor='w', pady=(10, 0))
@@ -420,8 +421,8 @@ class TextCounterGUI:
         for i in range(5):
             row_frame = ttk.Frame(self.kwListCard, style='TFrame')
             row_frame.pack(fill='x', pady=4)
-            lbl_word = ttk.Label(row_frame, text="-", style='CardTextBold.TLabel')
-            lbl_word.pack(side=tk.LEFT)
+            lbl_word = ttk.Label(row_frame, text="-", style='CardTextBold.TLabel', wraplength=100)
+            lbl_word.pack(side=tk.LEFT, fill='x', expand=True)
             lbl_stats = ttk.Label(row_frame, text="", style='MetricName.TLabel')
             lbl_stats.pack(side=tk.RIGHT)
             self.kwRows.append((lbl_word, lbl_stats))
@@ -452,8 +453,8 @@ class TextCounterGUI:
         for i in range(8):
             row_frame = ttk.Frame(self.charListCard, style='TFrame')
             row_frame.pack(fill='x', pady=2)
-            lbl_char = ttk.Label(row_frame, text="-", style='CardTextBold.TLabel')
-            lbl_char.pack(side=tk.LEFT)
+            lbl_char = ttk.Label(row_frame, text="-", style='CardTextBold.TLabel', wraplength=100)
+            lbl_char.pack(side=tk.LEFT, fill='x', expand=True)
             lbl_stats = ttk.Label(row_frame, text="", style='MetricName.TLabel')
             lbl_stats.pack(side=tk.RIGHT)
             self.charRows.append((lbl_char, lbl_stats))
