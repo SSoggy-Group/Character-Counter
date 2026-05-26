@@ -469,11 +469,23 @@ class TextCounterGUI:
         self.charCanvas.pack(fill='both', expand=True)
         
         # Bind canvas resize to redraw charts
-        self.keywordCanvas.bind('<Configure>', lambda e: self.updateCharts())
-        self.charCanvas.bind('<Configure>', lambda e: self.updateCharts())
+        self.keywordCanvas.bind('<Configure>', self.onKwConfigure)
+        self.charCanvas.bind('<Configure>', self.onCharConfigure)
         
         self.applyTheme()
         self.updateAnalysis()
+
+    def onKwConfigure(self, event):
+        if hasattr(self, '_kw_last_width') and self._kw_last_width == event.width:
+            return
+        self._kw_last_width = event.width
+        self.updateCharts()
+
+    def onCharConfigure(self, event):
+        if hasattr(self, '_char_last_width') and self._char_last_width == event.width:
+            return
+        self._char_last_width = event.width
+        self.updateCharts()
 
     def toggleTheme(self):
         if self.currentTheme == "light":
@@ -545,6 +557,8 @@ class TextCounterGUI:
         self.updateAnalysis()
 
     def onTextModified(self, event):
+        if not self.textInput.edit_modified():
+            return
         self.textInput.edit_modified(False)
         self.updateAnalysis()
 
@@ -557,6 +571,7 @@ class TextCounterGUI:
             text = text[:-1]
             
         metrics = analyzeText(text)
+        self.last_metrics = metrics
         
         modelStr = self.pageModelVar.get()
         modelKey = "words" if "words" in modelStr else "characters"
@@ -651,10 +666,13 @@ class TextCounterGUI:
 
     def updateCharts(self, metrics=None):
         if metrics is None:
-            text = self.textInput.get("1.0", tk.END)
-            if text.endswith("\n"):
-                text = text[:-1]
-            metrics = analyzeText(text)
+            metrics = getattr(self, 'last_metrics', None)
+            if metrics is None:
+                text = self.textInput.get("1.0", tk.END)
+                if text.endswith("\n"):
+                    text = text[:-1]
+                metrics = analyzeText(text)
+                self.last_metrics = metrics
             
         theme = THEMES[self.currentTheme]
         self.drawCanvasChart(self.keywordCanvas, metrics["keywords"], theme)
