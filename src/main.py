@@ -238,10 +238,9 @@ class TextCounterGUI:
         self.mainFrame = ttk.Frame(self.root, padding=15, style='TFrame')
         self.mainFrame.grid(row=0, column=0, sticky='nsew')
         self.mainFrame.columnconfigure(0, weight=1)
-        self.mainFrame.rowconfigure(1, weight=1) # text box holds expansion
-        self.mainFrame.rowconfigure(4, weight=1) # Notebook holds vertical expansion too
+        self.mainFrame.rowconfigure(1, weight=1) 
+        self.mainFrame.rowconfigure(4, weight=1) 
         
-        # 1. Header Frame
         self.headerFrame = ttk.Frame(self.mainFrame, style='TFrame')
         self.headerFrame.grid(row=0, column=0, sticky='ew', pady=(0, 5))
         
@@ -251,7 +250,6 @@ class TextCounterGUI:
         self.themeBtn = ttk.Button(self.headerFrame, text="🌙 dark mode", command=self.toggleTheme)
         self.themeBtn.pack(side=tk.RIGHT, anchor='e')
         
-        # 2. Text Frame
         self.textFrame = ttk.Frame(self.mainFrame, style='TFrame')
         self.textFrame.grid(row=1, column=0, sticky='nsew', pady=(0, 5))
         self.textFrame.columnconfigure(0, weight=1)
@@ -268,7 +266,6 @@ class TextCounterGUI:
         self.textInput.bind('<<Modified>>', self.onTextModified)
         self.textInput.bind('<KeyRelease>', self.onKeyRelease)
         
-        # 3. Case Conversion Toolbar
         self.caseFrame = ttk.Frame(self.mainFrame, style='TFrame')
         self.caseFrame.grid(row=2, column=0, sticky='ew', pady=(0, 5))
         
@@ -280,7 +277,6 @@ class TextCounterGUI:
         ttk.Button(self.caseFrame, text="rAnDoM", command=lambda: self.modifyText(toSpongeCase)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Clean", command=lambda: self.modifyText(cleanSpaces)).pack(side=tk.LEFT, padx=2)
         
-        # 4. Controls Frame
         self.controlsFrame = ttk.Frame(self.mainFrame, style='TFrame')
         self.controlsFrame.grid(row=3, column=0, sticky='ew', pady=(0, 10))
         
@@ -301,11 +297,9 @@ class TextCounterGUI:
         self.copyBtn = ttk.Button(self.controlsFrame, text="copy report", command=self.copyResults)
         self.copyBtn.pack(side=tk.RIGHT, padx=5)
         
-        # 5. Analysis Tabs (Notebook)
         self.notebook = ttk.Notebook(self.mainFrame)
         self.notebook.grid(row=4, column=0, sticky='nsew')
         
-        # Create Tab Frames
         self.overviewTab = ttk.Frame(self.notebook, style='TFrame')
         self.readabilityTab = ttk.Frame(self.notebook, style='TFrame')
         self.keywordsTab = ttk.Frame(self.notebook, style='TFrame')
@@ -316,7 +310,6 @@ class TextCounterGUI:
         self.notebook.add(self.keywordsTab, text="keywords")
         self.notebook.add(self.charTab, text="character frequency")
         
-        # --- TAB 1: OVERVIEW CARD GRID ---
         self.overviewTab.columnconfigure(0, weight=1)
         self.overviewTab.rowconfigure(0, weight=1)
         
@@ -351,14 +344,12 @@ class TextCounterGUI:
             
             self.metricCards[name] = valLbl
             
-        # --- TAB 2: READABILITY & TIMING LAYOUT ---
         self.readabilityFrame = ttk.Frame(self.readabilityTab, style='TFrame', padding=10)
         self.readabilityFrame.pack(fill='both', expand=True)
         self.readabilityFrame.columnconfigure(0, weight=1, uniform="equal")
         self.readabilityFrame.columnconfigure(1, weight=1, uniform="equal")
         self.readabilityFrame.rowconfigure(0, weight=1)
         
-        # Readability metrics card
         self.readCard = ttk.Frame(self.readabilityFrame, style='Card.TFrame', padding=15)
         self.readCard.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
         
@@ -380,7 +371,6 @@ class TextCounterGUI:
         self.syllablesLbl = ttk.Label(self.readCard, text="0", style='MetricValue.TLabel')
         self.syllablesLbl.pack(anchor='w')
         
-        # Timing card
         self.timeCard = ttk.Frame(self.readabilityFrame, style='Card.TFrame', padding=15)
         self.timeCard.grid(row=0, column=1, padx=5, pady=5, sticky='nsew')
         
@@ -404,7 +394,6 @@ class TextCounterGUI:
         )
         self.paceInfoLbl.pack(anchor='w', pady=(10, 0))
         
-        # --- TAB 3: KEYWORDS LAYOUT ---
         self.keywordsFrame = ttk.Frame(self.keywordsTab, style='TFrame', padding=10)
         self.keywordsFrame.pack(fill='both', expand=True)
         self.keywordsFrame.columnconfigure(0, weight=1, uniform="equal")
@@ -435,9 +424,7 @@ class TextCounterGUI:
         
         self.keywordCanvas = tk.Canvas(self.kwChartCard, bg='#ffffff', bd=0, highlightthickness=1)
         self.keywordCanvas.pack(fill='both', expand=True)
-        
-        # --- TAB 4: CHARACTER FREQUENCY LAYOUT ---
-        self.charsTabFrame = ttk.Frame(self.charTab, style='TFrame', padding=10)
+                self.charsTabFrame = ttk.Frame(self.charTab, style='TFrame', padding=10)
         self.charsTabFrame.pack(fill='both', expand=True)
         self.charsTabFrame.columnconfigure(0, weight=1, uniform="equal")
         self.charsTabFrame.columnconfigure(1, weight=1, uniform="equal")
@@ -468,7 +455,6 @@ class TextCounterGUI:
         self.charCanvas = tk.Canvas(self.charChartCard, bg='#ffffff', bd=0, highlightthickness=1)
         self.charCanvas.pack(fill='both', expand=True)
         
-        # Bind canvas resize to redraw charts
         self.keywordCanvas.bind('<Configure>', self.onKwConfigure)
         self.charCanvas.bind('<Configure>', self.onCharConfigure)
         
@@ -577,7 +563,6 @@ class TextCounterGUI:
         modelKey = "words" if "words" in modelStr else "characters"
         pages = calculatePages(metrics["words"], metrics["characters"], modelKey)
         
-        # 1. Update Overview Tab
         self.metricCards["characters"].config(text=str(metrics["characters"]))
         self.metricCards["words"].config(text=str(metrics["words"]))
         self.metricCards["char (no spaces)"].config(text=str(metrics["characters_no_spaces"]))
@@ -586,7 +571,6 @@ class TextCounterGUI:
         self.metricCards["paragraphs"].config(text=str(metrics["paragraphs"]))
         self.metricCards["est. pages"].config(text=str(pages))
         
-        # 2. Update Readability Tab
         self.easeScoreLbl.config(text=f"{metrics['readability_ease']:.1f}")
         self.easeInterpLbl.config(text=getReadabilityInterpretation(metrics['readability_ease']))
         self.gradeLevelLbl.config(text=f"{metrics['readability_grade']:.1f}")
@@ -594,7 +578,6 @@ class TextCounterGUI:
         self.readTimeLbl.config(text=formatTime(metrics['reading_time']))
         self.speakTimeLbl.config(text=formatTime(metrics['speaking_time']))
         
-        # 3. Update Keywords Tab Listings
         for idx, (lbl_word, lbl_stats) in enumerate(self.kwRows):
             if idx < len(metrics["keywords"]):
                 w, count, pct = metrics["keywords"][idx]
@@ -604,7 +587,6 @@ class TextCounterGUI:
                 lbl_word.config(text="-")
                 lbl_stats.config(text="")
                 
-        # 4. Update Character Tab Listings
         for idx, (lbl_char, lbl_stats) in enumerate(self.charRows):
             if idx < len(metrics["char_dist"]):
                 c, count, pct = metrics["char_dist"][idx]
@@ -614,7 +596,6 @@ class TextCounterGUI:
                 lbl_char.config(text="-")
                 lbl_stats.config(text="")
                 
-        # 5. Redraw the canvas charts
         self.updateCharts(metrics)
 
     def drawCanvasChart(self, canvas, data, theme):
