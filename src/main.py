@@ -232,8 +232,8 @@ class TextCounterGUI:
         self.mainFrame = ttk.Frame(self.root, padding=15, style='TFrame')
         self.mainFrame.grid(row=0, column=0, sticky='nsew')
         self.mainFrame.columnconfigure(0, weight=1)
-        self.mainFrame.rowconfigure(1, weight=1)
-        self.mainFrame.rowconfigure(4, weight=1)
+        self.mainFrame.rowconfigure(1, weight=1) # text box holds expansion
+        self.mainFrame.rowconfigure(4, weight=1) # Notebook holds vertical expansion too
         
         # 1. Header Frame
         self.headerFrame = ttk.Frame(self.mainFrame, style='TFrame')
@@ -460,6 +460,10 @@ class TextCounterGUI:
         self.charCanvas = tk.Canvas(self.charChartCard, bg='#ffffff', bd=0, highlightthickness=1)
         self.charCanvas.pack(fill='both', expand=True)
         
+        # Bind canvas resize to redraw charts
+        self.keywordCanvas.bind('<Configure>', lambda e: self.updateCharts())
+        self.charCanvas.bind('<Configure>', lambda e: self.updateCharts())
+        
         self.applyTheme()
         self.updateAnalysis()
 
@@ -511,6 +515,8 @@ class TextCounterGUI:
         
         self.keywordCanvas.config(bg=theme["canvas_bg"], highlightbackground=theme["border_color"])
         self.charCanvas.config(bg=theme["canvas_bg"], highlightbackground=theme["border_color"])
+        
+        self.updateCharts()
 
     def modifyText(self, transform_func):
         try:
@@ -584,6 +590,67 @@ class TextCounterGUI:
             else:
                 lbl_char.config(text="-")
                 lbl_stats.config(text="")
+                
+        # 5. Redraw the canvas charts
+        self.updateCharts(metrics)
+
+    def drawCanvasChart(self, canvas, data, theme):
+        canvas.delete("all")
+        if not data:
+            canvas.create_text(150, 80, text="no data to display", fill=theme["fg_muted"], font=('Helvetica', 10, 'italic'))
+            return
+            
+        canvas_width = canvas.winfo_width()
+        if canvas_width < 100:
+            canvas_width = 300
+            
+        x_label = 15
+        x_bar_start = 75
+        x_bar_max_width = canvas_width - x_bar_start - 65
+        y_start = 15
+        y_spacing = 22
+        bar_height = 11
+        
+        max_val = max(item[1] for item in data) if data else 1
+        
+        for idx, item in enumerate(data):
+            label, count, pct = item
+            y = y_start + idx * y_spacing
+            
+            display_label = label
+            if len(display_label) > 8:
+                display_label = display_label[:6] + ".."
+                
+            canvas.create_text(x_label, y + bar_height/2, text=display_label, fill=theme["fg"], font=('Helvetica', 9, 'bold'), anchor='w')
+            
+            bar_width = (count / max_val) * x_bar_max_width if max_val > 0 else 0
+            if count > 0:
+                bar_width = max(3, bar_width)
+                
+            color = theme["chart_colors"][idx % len(theme["chart_colors"])]
+            
+            canvas.create_rectangle(
+                x_bar_start, y, 
+                x_bar_start + bar_width, y + bar_height,
+                fill=color, outline="", width=0
+            )
+            
+            val_text = f"{count} ({pct:.1f}%)"
+            canvas.create_text(
+                x_bar_start + bar_width + 8, y + bar_height/2,
+                text=val_text, fill=theme["fg_muted"], font=('Helvetica', 8), anchor='w'
+            )
+
+    def updateCharts(self, metrics=None):
+        if metrics is None:
+            text = self.textInput.get("1.0", tk.END)
+            if text.endswith("\n"):
+                text = text[:-1]
+            metrics = analyzeText(text)
+            
+        theme = THEMES[self.currentTheme]
+        self.drawCanvasChart(self.keywordCanvas, metrics["keywords"], theme)
+        self.drawCanvasChart(self.charCanvas, metrics["char_dist"], theme)
 
     def clearText(self):
         self.textInput.delete("1.0", tk.END)
