@@ -127,6 +127,11 @@ def formatTime(minutes):
         return f"{mins}m {secs}s"
     return f"{secs}s"
 
+import random
+
+def toSpongeCase(text):
+    return "".join(random.choice([char.upper(), char.lower()]) if char.isalpha() else char for char in text)
+
 def toSentenceCase(text):
     sentences = re.split(r'((?<=[.!?])\s+)', text)
     result = []
@@ -139,8 +144,9 @@ def toSentenceCase(text):
             match = re.search(r'\w', part)
             if match:
                 idx = match.start()
-                capitalized = part[:idx] + part[idx].upper() + part[idx+1:]
-                result.append(capitalized)
+                first_letter = part[idx].upper()
+                rest = part[idx+1:].lower()
+                result.append(part[:idx] + first_letter + rest)
             else:
                 result.append(part)
     return "".join(result)
@@ -254,7 +260,7 @@ class TextCounterGUI:
         self.textInput = scrolledtext.ScrolledText(
             self.textFrame, wrap=tk.WORD, font=('Courier New', 11),
             bg='#ffffff', fg='#2c3e50', insertbackground='#2c3e50',
-            bd=1, relief='solid', padx=5, pady=5
+            bd=1, relief='solid', padx=5, pady=5, height=8
         )
         self.textInput.grid(row=0, column=0, sticky='nsew')
         self.textInput.focus_set()
@@ -271,6 +277,7 @@ class TextCounterGUI:
         ttk.Button(self.caseFrame, text="lower", command=lambda: self.modifyText(str.lower)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Title", command=lambda: self.modifyText(str.title)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Sentence", command=lambda: self.modifyText(toSentenceCase)).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.caseFrame, text="hELLo", command=lambda: self.modifyText(toSpongeCase)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Clean Spaces", command=lambda: self.modifyText(cleanSpaces)).pack(side=tk.LEFT, padx=2)
         
         # 4. Controls Frame
