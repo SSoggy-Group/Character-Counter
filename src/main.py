@@ -228,8 +228,8 @@ class TextCounterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("character counter")
-        self.root.geometry("720x640")
-        self.root.minsize(680, 580)
+        self.root.geometry("780x640")
+        self.root.minsize(780, 580)
         self.currentTheme = "light"
         
         self.root.columnconfigure(0, weight=1)
@@ -278,7 +278,7 @@ class TextCounterGUI:
         ttk.Button(self.caseFrame, text="Title", command=lambda: self.modifyText(str.title)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Sentence", command=lambda: self.modifyText(toSentenceCase)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="rAnDoM", command=lambda: self.modifyText(toSpongeCase)).pack(side=tk.LEFT, padx=2)
-        ttk.Button(self.caseFrame, text="Clean Spaces", command=lambda: self.modifyText(cleanSpaces)).pack(side=tk.LEFT, padx=2)
+        ttk.Button(self.caseFrame, text="Clean", command=lambda: self.modifyText(cleanSpaces)).pack(side=tk.LEFT, padx=2)
         
         # 4. Controls Frame
         self.controlsFrame = ttk.Frame(self.mainFrame, style='TFrame')
