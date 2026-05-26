@@ -222,8 +222,8 @@ class TextCounterGUI:
     def __init__(self, root):
         self.root = root
         self.root.title("character counter")
-        self.root.geometry("600x560")
-        self.root.minsize(500, 450)
+        self.root.geometry("720x640")
+        self.root.minsize(680, 580)
         self.currentTheme = "light"
         
         self.root.columnconfigure(0, weight=1)
@@ -233,10 +233,11 @@ class TextCounterGUI:
         self.mainFrame.grid(row=0, column=0, sticky='nsew')
         self.mainFrame.columnconfigure(0, weight=1)
         self.mainFrame.rowconfigure(1, weight=1)
+        self.mainFrame.rowconfigure(4, weight=1)
         
-        # Header Frame
+        # 1. Header Frame
         self.headerFrame = ttk.Frame(self.mainFrame, style='TFrame')
-        self.headerFrame.grid(row=0, column=0, sticky='ew', pady=(0, 10))
+        self.headerFrame.grid(row=0, column=0, sticky='ew', pady=(0, 5))
         
         self.titleLabel = ttk.Label(self.headerFrame, text="character counter", style='Title.TLabel')
         self.titleLabel.pack(side=tk.LEFT, anchor='w')
@@ -244,9 +245,9 @@ class TextCounterGUI:
         self.themeBtn = ttk.Button(self.headerFrame, text="🌙 dark mode", command=self.toggleTheme)
         self.themeBtn.pack(side=tk.RIGHT, anchor='e')
         
-        # Text Frame
+        # 2. Text Frame
         self.textFrame = ttk.Frame(self.mainFrame, style='TFrame')
-        self.textFrame.grid(row=1, column=0, sticky='nsew', pady=(0, 10))
+        self.textFrame.grid(row=1, column=0, sticky='nsew', pady=(0, 5))
         self.textFrame.columnconfigure(0, weight=1)
         self.textFrame.rowconfigure(0, weight=1)
         
@@ -261,9 +262,9 @@ class TextCounterGUI:
         self.textInput.bind('<<Modified>>', self.onTextModified)
         self.textInput.bind('<KeyRelease>', self.onKeyRelease)
         
-        # Case conversion toolbar
+        # 3. Case Conversion Toolbar
         self.caseFrame = ttk.Frame(self.mainFrame, style='TFrame')
-        self.caseFrame.grid(row=2, column=0, sticky='ew', pady=(0, 10))
+        self.caseFrame.grid(row=2, column=0, sticky='ew', pady=(0, 5))
         
         ttk.Label(self.caseFrame, text="format text:", style='TLabel').pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(self.caseFrame, text="UPPER", command=lambda: self.modifyText(str.upper)).pack(side=tk.LEFT, padx=2)
@@ -272,7 +273,7 @@ class TextCounterGUI:
         ttk.Button(self.caseFrame, text="Sentence", command=lambda: self.modifyText(toSentenceCase)).pack(side=tk.LEFT, padx=2)
         ttk.Button(self.caseFrame, text="Clean Spaces", command=lambda: self.modifyText(cleanSpaces)).pack(side=tk.LEFT, padx=2)
         
-        # Controls Frame
+        # 4. Controls Frame
         self.controlsFrame = ttk.Frame(self.mainFrame, style='TFrame')
         self.controlsFrame.grid(row=3, column=0, sticky='ew', pady=(0, 10))
         
@@ -290,16 +291,35 @@ class TextCounterGUI:
         self.clearBtn = ttk.Button(self.controlsFrame, text="clear", command=self.clearText)
         self.clearBtn.pack(side=tk.RIGHT, padx=5)
         
-        self.copyBtn = ttk.Button(self.controlsFrame, text="copy", command=self.copyResults)
+        self.copyBtn = ttk.Button(self.controlsFrame, text="copy report", command=self.copyResults)
         self.copyBtn.pack(side=tk.RIGHT, padx=5)
         
-        # Results Frame
-        self.resultsFrame = ttk.Frame(self.mainFrame, style='TFrame')
-        self.resultsFrame.grid(row=4, column=0, sticky='ew')
+        # 5. Analysis Tabs (Notebook)
+        self.notebook = ttk.Notebook(self.mainFrame)
+        self.notebook.grid(row=4, column=0, sticky='nsew')
         
+        # Create Tab Frames
+        self.overviewTab = ttk.Frame(self.notebook, style='TFrame')
+        self.readabilityTab = ttk.Frame(self.notebook, style='TFrame')
+        self.keywordsTab = ttk.Frame(self.notebook, style='TFrame')
+        self.charTab = ttk.Frame(self.notebook, style='TFrame')
+        
+        self.notebook.add(self.overviewTab, text="overview")
+        self.notebook.add(self.readabilityTab, text="readability & timing")
+        self.notebook.add(self.keywordsTab, text="keywords")
+        self.notebook.add(self.charTab, text="character frequency")
+        
+        # --- TAB 1: OVERVIEW CARD GRID ---
+        self.overviewTab.columnconfigure(0, weight=1)
+        self.overviewTab.rowconfigure(0, weight=1)
+        
+        self.resultsGridFrame = ttk.Frame(self.overviewTab, style='TFrame', padding=10)
+        self.resultsGridFrame.grid(row=0, column=0, sticky='nsew')
         for col in range(4):
-            self.resultsFrame.columnconfigure(col, weight=1, uniform="equal")
-            
+            self.resultsGridFrame.columnconfigure(col, weight=1, uniform="equal")
+        self.resultsGridFrame.rowconfigure(0, weight=1, uniform="row_equal")
+        self.resultsGridFrame.rowconfigure(1, weight=1, uniform="row_equal")
+        
         self.metricCards = {}
         metricsLayout = [
             ("characters", 0, 0),
@@ -312,18 +332,134 @@ class TextCounterGUI:
         ]
         
         for name, row, col in metricsLayout:
-            card = ttk.Frame(self.resultsFrame, style='Card.TFrame', padding=8)
             span = 2 if name == "est. pages" else 1
-            card.grid(row=row, column=col, columnspan=span, padx=3, pady=3, sticky='nsew')
+            card = ttk.Frame(self.resultsGridFrame, style='Card.TFrame', padding=10)
+            card.grid(row=row, column=col, columnspan=span, padx=4, pady=4, sticky='nsew')
             
             nameLbl = ttk.Label(card, text=name, style='MetricName.TLabel')
             nameLbl.pack(anchor='w')
             
             valLbl = ttk.Label(card, text="0", style='MetricValue.TLabel')
-            valLbl.pack(anchor='w', pady=(2, 0))
+            valLbl.pack(anchor='w', pady=(4, 0))
             
             self.metricCards[name] = valLbl
             
+        # --- TAB 2: READABILITY & TIMING LAYOUT ---
+        self.readabilityFrame = ttk.Frame(self.readabilityTab, style='TFrame', padding=10)
+        self.readabilityFrame.pack(fill='both', expand=True)
+        self.readabilityFrame.columnconfigure(0, weight=1, uniform="equal")
+        self.readabilityFrame.columnconfigure(1, weight=1, uniform="equal")
+        self.readabilityFrame.rowconfigure(0, weight=1)
+        
+        # Readability metrics card
+        self.readCard = ttk.Frame(self.readabilityFrame, style='Card.TFrame', padding=15)
+        self.readCard.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+        
+        self.readCardTitle = ttk.Label(self.readCard, text="Readability Index", style='ReadabilityTitle.TLabel')
+        self.readCardTitle.pack(anchor='w', pady=(0, 10))
+        
+        ttk.Label(self.readCard, text="Flesch Reading Ease:", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
+        self.easeScoreLbl = ttk.Label(self.readCard, text="100.0", style='MetricValue.TLabel')
+        self.easeScoreLbl.pack(anchor='w', pady=(0, 2))
+        
+        self.easeInterpLbl = ttk.Label(self.readCard, text="very easy (5th grade)", style='CardText.TLabel')
+        self.easeInterpLbl.pack(anchor='w', pady=(0, 10))
+        
+        ttk.Label(self.readCard, text="Flesch-Kincaid Grade Level:", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
+        self.gradeLevelLbl = ttk.Label(self.readCard, text="0.0", style='MetricValue.TLabel')
+        self.gradeLevelLbl.pack(anchor='w', pady=(0, 10))
+        
+        ttk.Label(self.readCard, text="Total Syllables:", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
+        self.syllablesLbl = ttk.Label(self.readCard, text="0", style='MetricValue.TLabel')
+        self.syllablesLbl.pack(anchor='w')
+        
+        # Timing card
+        self.timeCard = ttk.Frame(self.readabilityFrame, style='Card.TFrame', padding=15)
+        self.timeCard.grid(row=0, column=1, padx=5, pady=5, sticky='nsew')
+        
+        self.timeCardTitle = ttk.Label(self.timeCard, text="Speech & Timing", style='ReadabilityTitle.TLabel')
+        self.timeCardTitle.pack(anchor='w', pady=(0, 10))
+        
+        ttk.Label(self.timeCard, text="Silent Reading Time (200 WPM):", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
+        self.readTimeLbl = ttk.Label(self.timeCard, text="0s", style='MetricValue.TLabel')
+        self.readTimeLbl.pack(anchor='w', pady=(0, 15))
+        
+        ttk.Label(self.timeCard, text="Speaking Time (130 WPM):", style='MetricName.TLabel').pack(anchor='w', pady=(5, 0))
+        self.speakTimeLbl = ttk.Label(self.timeCard, text="0s", style='MetricValue.TLabel')
+        self.speakTimeLbl.pack(anchor='w', pady=(0, 15))
+        
+        self.paceInfoLbl = ttk.Label(
+            self.timeCard, 
+            text="Ideal for presentation planning\nand readability auditing.", 
+            style='CardText.TLabel',
+            justify=tk.LEFT
+        )
+        self.paceInfoLbl.pack(anchor='w', pady=(10, 0))
+        
+        # --- TAB 3: KEYWORDS LAYOUT ---
+        self.keywordsFrame = ttk.Frame(self.keywordsTab, style='TFrame', padding=10)
+        self.keywordsFrame.pack(fill='both', expand=True)
+        self.keywordsFrame.columnconfigure(0, weight=1, uniform="equal")
+        self.keywordsFrame.columnconfigure(1, weight=1, uniform="equal")
+        self.keywordsFrame.rowconfigure(0, weight=1)
+        
+        self.kwListCard = ttk.Frame(self.keywordsFrame, style='Card.TFrame', padding=15)
+        self.kwListCard.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+        
+        self.kwListTitle = ttk.Label(self.kwListCard, text="Top Keywords", style='ReadabilityTitle.TLabel')
+        self.kwListTitle.pack(anchor='w', pady=(0, 15))
+        
+        self.kwRows = []
+        for i in range(5):
+            row_frame = ttk.Frame(self.kwListCard, style='TFrame')
+            row_frame.pack(fill='x', pady=4)
+            lbl_word = ttk.Label(row_frame, text="-", style='CardTextBold.TLabel')
+            lbl_word.pack(side=tk.LEFT)
+            lbl_stats = ttk.Label(row_frame, text="", style='MetricName.TLabel')
+            lbl_stats.pack(side=tk.RIGHT)
+            self.kwRows.append((lbl_word, lbl_stats))
+            
+        self.kwChartCard = ttk.Frame(self.keywordsFrame, style='Card.TFrame', padding=15)
+        self.kwChartCard.grid(row=0, column=1, padx=5, pady=5, sticky='nsew')
+        
+        self.kwChartTitle = ttk.Label(self.kwChartCard, text="Density Chart", style='ReadabilityTitle.TLabel')
+        self.kwChartTitle.pack(anchor='w', pady=(0, 10))
+        
+        self.keywordCanvas = tk.Canvas(self.kwChartCard, bg='#ffffff', bd=0, highlightthickness=1)
+        self.keywordCanvas.pack(fill='both', expand=True)
+        
+        # --- TAB 4: CHARACTER FREQUENCY LAYOUT ---
+        self.charsTabFrame = ttk.Frame(self.charTab, style='TFrame', padding=10)
+        self.charsTabFrame.pack(fill='both', expand=True)
+        self.charsTabFrame.columnconfigure(0, weight=1, uniform="equal")
+        self.charsTabFrame.columnconfigure(1, weight=1, uniform="equal")
+        self.charsTabFrame.rowconfigure(0, weight=1)
+        
+        self.charListCard = ttk.Frame(self.charsTabFrame, style='Card.TFrame', padding=15)
+        self.charListCard.grid(row=0, column=0, padx=5, pady=5, sticky='nsew')
+        
+        self.charListTitle = ttk.Label(self.charListCard, text="Top Characters", style='ReadabilityTitle.TLabel')
+        self.charListTitle.pack(anchor='w', pady=(0, 15))
+        
+        self.charRows = []
+        for i in range(8):
+            row_frame = ttk.Frame(self.charListCard, style='TFrame')
+            row_frame.pack(fill='x', pady=2)
+            lbl_char = ttk.Label(row_frame, text="-", style='CardTextBold.TLabel')
+            lbl_char.pack(side=tk.LEFT)
+            lbl_stats = ttk.Label(row_frame, text="", style='MetricName.TLabel')
+            lbl_stats.pack(side=tk.RIGHT)
+            self.charRows.append((lbl_char, lbl_stats))
+            
+        self.charChartCard = ttk.Frame(self.charsTabFrame, style='Card.TFrame', padding=15)
+        self.charChartCard.grid(row=0, column=1, padx=5, pady=5, sticky='nsew')
+        
+        self.charChartTitle = ttk.Label(self.charChartCard, text="Frequency Chart", style='ReadabilityTitle.TLabel')
+        self.charChartTitle.pack(anchor='w', pady=(0, 10))
+        
+        self.charCanvas = tk.Canvas(self.charChartCard, bg='#ffffff', bd=0, highlightthickness=1)
+        self.charCanvas.pack(fill='both', expand=True)
+        
         self.applyTheme()
         self.updateAnalysis()
 
@@ -348,6 +484,15 @@ class TextCounterGUI:
         style.configure('TLabel', foreground=theme["fg"], background=theme["bg"])
         style.configure('MetricName.TLabel', font=('Helvetica', 9), foreground=theme["fg_muted"], background=theme["card_bg"])
         style.configure('MetricValue.TLabel', font=('Helvetica', 12, 'bold'), foreground=theme["accent"], background=theme["card_bg"])
+        style.configure('CardText.TLabel', font=('Helvetica', 10), foreground=theme["fg"], background=theme["card_bg"])
+        style.configure('CardTextBold.TLabel', font=('Helvetica', 10, 'bold'), foreground=theme["fg"], background=theme["card_bg"])
+        style.configure('ReadabilityTitle.TLabel', font=('Helvetica', 11, 'bold'), foreground=theme["accent"], background=theme["card_bg"])
+        
+        style.configure('TNotebook', background=theme["bg"], borderwidth=0)
+        style.configure('TNotebook.Tab', font=('Helvetica', 9, 'bold'), padding=(8, 4))
+        style.map('TNotebook.Tab', 
+                  background=[('selected', theme["card_bg"]), ('!selected', theme["bg"])],
+                  foreground=[('selected', theme["fg"]), ('!selected', theme["fg_muted"])])
         
         style.configure('TButton', background=theme["card_bg"], foreground=theme["fg"], bordercolor=theme["border_color"])
         style.map('TButton', background=[('active', theme["bg"])])
@@ -363,6 +508,9 @@ class TextCounterGUI:
             bd=1,
             relief='solid'
         )
+        
+        self.keywordCanvas.config(bg=theme["canvas_bg"], highlightbackground=theme["border_color"])
+        self.charCanvas.config(bg=theme["canvas_bg"], highlightbackground=theme["border_color"])
 
     def modifyText(self, transform_func):
         try:
@@ -400,6 +548,7 @@ class TextCounterGUI:
         modelKey = "words" if "words" in modelStr else "characters"
         pages = calculatePages(metrics["words"], metrics["characters"], modelKey)
         
+        # 1. Update Overview Tab
         self.metricCards["characters"].config(text=str(metrics["characters"]))
         self.metricCards["words"].config(text=str(metrics["words"]))
         self.metricCards["char (no spaces)"].config(text=str(metrics["characters_no_spaces"]))
@@ -407,6 +556,34 @@ class TextCounterGUI:
         self.metricCards["lines"].config(text=str(metrics["lines"]))
         self.metricCards["paragraphs"].config(text=str(metrics["paragraphs"]))
         self.metricCards["est. pages"].config(text=str(pages))
+        
+        # 2. Update Readability Tab
+        self.easeScoreLbl.config(text=f"{metrics['readability_ease']:.1f}")
+        self.easeInterpLbl.config(text=getReadabilityInterpretation(metrics['readability_ease']))
+        self.gradeLevelLbl.config(text=f"{metrics['readability_grade']:.1f}")
+        self.syllablesLbl.config(text=str(metrics['syllables']))
+        self.readTimeLbl.config(text=formatTime(metrics['reading_time']))
+        self.speakTimeLbl.config(text=formatTime(metrics['speaking_time']))
+        
+        # 3. Update Keywords Tab Listings
+        for idx, (lbl_word, lbl_stats) in enumerate(self.kwRows):
+            if idx < len(metrics["keywords"]):
+                w, count, pct = metrics["keywords"][idx]
+                lbl_word.config(text=f"{idx+1}. {w}")
+                lbl_stats.config(text=f"{count} ({pct:.1f}%)")
+            else:
+                lbl_word.config(text="-")
+                lbl_stats.config(text="")
+                
+        # 4. Update Character Tab Listings
+        for idx, (lbl_char, lbl_stats) in enumerate(self.charRows):
+            if idx < len(metrics["char_dist"]):
+                c, count, pct = metrics["char_dist"][idx]
+                lbl_char.config(text=f"{idx+1}. '{c}'")
+                lbl_stats.config(text=f"{count} ({pct:.1f}%)")
+            else:
+                lbl_char.config(text="-")
+                lbl_stats.config(text="")
 
     def clearText(self):
         self.textInput.delete("1.0", tk.END)
@@ -430,7 +607,11 @@ class TextCounterGUI:
             f"sentences: {metrics['sentences']}\n"
             f"lines: {metrics['lines']}\n"
             f"paragraphs: {metrics['paragraphs']}\n"
-            f"est. pages ({modelStr}): {pages}"
+            f"est. pages ({modelStr}): {pages}\n"
+            f"readability ease: {metrics['readability_ease']:.1f} ({getReadabilityInterpretation(metrics['readability_ease'])})\n"
+            f"readability grade: {metrics['readability_grade']:.1f}\n"
+            f"reading time: {formatTime(metrics['reading_time'])}\n"
+            f"speaking time: {formatTime(metrics['speaking_time'])}"
         )
         self.root.clipboard_clear()
         self.root.clipboard_append(report)
