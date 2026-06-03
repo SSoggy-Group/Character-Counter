@@ -35,40 +35,52 @@ or download the .py file from github releases
 
 ---
 
+## installation
+
+you can easily install the app via pip:
+```bash
+pip install character-counter-maaren
+```
+*(you may need to use `pipx` or a virtual environment depending on your system)*
+
+---
+
 ## usage
 
+once installed, the `charcount` command will be available globally in your terminal.
+
 ### gui mode
-run the script with no arguments to open the gui:
+run the command with no arguments to open the gui:
 ```bash
-python3 src/main.py
+charcount
 ```
 
 ### cli mode
-run with `--cli` or `-c` to force use in the terminal:
+the tool will automatically run in the terminal if you pass a file or use the `--cli` or `-c` flags:
 ```bash
-python3 src/main.py --cli
+charcount --cli
 ```
 
 #### examples:
 - **analyze a file:**
   ```bash
-  python3 src/main.py path/to/file.txt
+  charcount path/to/file.txt
   ```
 - **pipe text directly:**
   ```bash
-  echo "some text to analyze" | python3 src/main.py
+  echo "some text to analyze" | charcount
   ```
 - **get json output:**
   ```bash
-  python3 src/main.py --json path/to/file.txt
+  charcount --json path/to/file.txt
   ```
 - **extract only specific metrics (e.g. words & lines):**
   ```bash
-  python3 src/main.py --words --lines path/to/file.txt
+  charcount --words --lines path/to/file.txt
   ```
 - **count regex pattern occurrences:**
   ```bash
-  python3 src/main.py --query "[a-z]+ing" --regex path/to/file.txt
+  charcount --query "[a-z]+ing" --regex path/to/file.txt
   ```
 
 ---
