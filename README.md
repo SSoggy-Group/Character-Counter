@@ -1,7 +1,16 @@
 # character counter
 
-a powerful python script and desktop utility to count characters, words, sentences, lines, paragraphs, and estimated pages. features a rich, multi-tab tkinter gui with advanced text metrics and full cli support.
+a cool python script and desktop utility to count characters, words, sentences, lines, paragraphs, and estimated pages. features a rich, multi-tab tkinter gui with advanced text metrics and full cli support.
 
+install it with
+```
+pip install character-counter-maaren
+```
+and run with 
+```
+charcount
+```
+or download the .py file from github releases 
 ## features
 
 ### 1. advanced text metrics
