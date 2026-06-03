@@ -424,7 +424,8 @@ class TextCounterGUI:
         
         self.keywordCanvas = tk.Canvas(self.kwChartCard, bg='#ffffff', bd=0, highlightthickness=1)
         self.keywordCanvas.pack(fill='both', expand=True)
-                self.charsTabFrame = ttk.Frame(self.charTab, style='TFrame', padding=10)
+        
+        self.charsTabFrame = ttk.Frame(self.charTab, style='TFrame', padding=10)
         self.charsTabFrame.pack(fill='both', expand=True)
         self.charsTabFrame.columnconfigure(0, weight=1, uniform="equal")
         self.charsTabFrame.columnconfigure(1, weight=1, uniform="equal")
