@@ -2,15 +2,6 @@
 
 a cool python script and desktop utility to count characters, words, sentences, lines, paragraphs, and estimated pages. features a rich, multi-tab tkinter gui with advanced text metrics and full cli support.
 
-install it with
-```
-pip install character-counter-maaren
-```
-and run with 
-```
-charcount
-```
-or download the .py file from github releases 
 ## features
 
 ### 1. advanced text metrics
@@ -42,6 +33,8 @@ you can easily install the app via pip:
 pip install character-counter-maaren
 ```
 *(you may need to use `pipx` or a virtual environment depending on your system)*
+
+alternatively, you can download the source files directly from github releases.
 
 ---
 
