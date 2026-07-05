@@ -1,0 +1,86 @@
+name: Build demo executables
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform.name }}
+    runs-on: ${{ matrix.platform.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - name: Windows
+            os: windows-latest
+            artifact: CharacterCounter-Windows
+            executable: CharacterCounter.exe
+            pyinstaller_args: --windowed
+          - name: macOS
+            os: macos-latest
+            artifact: CharacterCounter-macOS
+            executable: CharacterCounter
+            pyinstaller_args: --windowed
+          - name: Linux
+            os: ubuntu-latest
+            artifact: CharacterCounter-Linux
+            executable: CharacterCounter
+            pyinstaller_args: ""
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install build dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install . "pyinstaller>=6,<7"
+
+      - name: Build executable
+        run: >
+          python -m PyInstaller
+          --onefile
+          --name CharacterCounter
+          ${{ matrix.platform.pyinstaller_args }}
+          src/character_counter/main.py
+
+      - name: Package executable
+        shell: bash
+        run: |
+          mkdir -p artifact
+
+          if [[ "${{ matrix.platform.os }}" == "macos-latest" ]]; then
+            if [[ -f "dist/${{ matrix.platform.executable }}" ]]; then
+              cp "dist/${{ matrix.platform.executable }}" artifact/
+              chmod +x "artifact/${{ matrix.platform.executable }}"
+            fi
+
+            if [[ -d "dist/CharacterCounter.app" ]]; then
+              ditto -c -k --keepParent dist/CharacterCounter.app artifact/CharacterCounter.app.zip
+            fi
+          else
+            cp "dist/${{ matrix.platform.executable }}" artifact/
+            if [[ "${{ matrix.platform.os }}" != "windows-latest" ]]; then
+              chmod +x "artifact/${{ matrix.platform.executable }}"
+            fi
+          fi
+
+          compgen -G "artifact/*" > /dev/null || {
+            echo "No packaged executable found."
+            exit 1
+          }
+
+      - name: Upload executable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform.artifact }}
+          path: artifact/
