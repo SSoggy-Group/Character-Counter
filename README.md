@@ -26,6 +26,30 @@ a cool python script and desktop utility to count characters, words, sentences, 
 
 ---
 
+## demo downloads
+
+downloadable demo builds are attached to github releases for windows, macos, and linux. these builds run without installing python, creating a virtual environment, installing dependencies, or manually running a `.py` file.
+
+to get a demo build:
+
+1. go to the [latest github release](https://github.com/SSoggy-Group/Character-Counter/releases/latest).
+2. download the asset for your operating system:
+   - `CharacterCounter-Windows.zip`
+   - `CharacterCounter-macOS.zip`
+   - `CharacterCounter-Linux.zip`
+3. unzip the downloaded file.
+4. run the executable for your platform.
+
+development builds are also available as artifacts on the [github actions page](https://github.com/SSoggy-Group/Character-Counter/actions) after each push to `main`.
+
+platform notes:
+
+- **windows:** run `CharacterCounter.exe`.
+- **macos:** run `CharacterCounter`, or open `CharacterCounter.app` if the build produces an app bundle. macos may show a security warning for unsigned apps.
+- **linux:** run `./CharacterCounter`. if needed, make it executable first with `chmod +x CharacterCounter`. the linux build should work on common linux desktop systems, but portability can depend on system libraries.
+
+---
+
 ## installation
 
 you can easily install the app via pip:
